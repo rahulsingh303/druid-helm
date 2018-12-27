@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ .Chart.Name }}-{{ .Values.nodes.coordinator.name }}-deployment"
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+spec:
+  selector:
+    matchLabels:
+      name: "{{ .Chart.Name }}-{{ .Values.nodes.coordinator.name }}-rc"
+      app: {{ template "fullname" . }}
+  replicas: {{ .Values.nodes.coordinator.replicaCount }}
+  template:
+    metadata:
+      labels:
+        name: "{{ .Chart.Name }}-{{ .Values.nodes.coordinator.name }}-rc"
+        app: {{ template "fullname" . }}
+    spec:
+      containers:
+      - name: "{{ .Chart.Name }}-{{ .Values.nodes.coordinator.name }}"
+        image: "{{ .Values.nodes.coordinator.image.repository }}:{{ .Values.nodes.coordinator.image.tag }}"
+        imagePullPolicy: {{ .Values.nodes.coordinator.image.pullPolicy }}
+        args: ["coordinator"]
+        ports:
+        {{range .Values.nodes.coordinator.service.ports }}
+          - containerPort: {{ .port }}
+        {{end}}
+        volumeMounts:
+        - name: {{ .Values.nodes.coordinator.configVolumeClaim }}
+          mountPath: {{ .Values.nodes.coordinator.configMountPath }}
+        env:
+           - name: MYSQL_CONNECT_URI
+             valueFrom:
+               secretKeyRef:
+                 name: {{ .Values.secrets.name }}
+                 key: {{ .Values.secrets.key.connectURI }}
+           - name: MYSQL_USERNAME
+             valueFrom:
+               secretKeyRef:
+                  name: {{ .Values.secrets.name }}
+                  key: {{ .Values.secrets.key.user }}
+           - name: MYSQL_PASSWORD
+             valueFrom:
+               secretKeyRef:
+                  name: {{ .Values.secrets.name }}
+                  key: {{ .Values.secrets.key.password }}
+           - name: DRUID_XMX
+             value: {{ .Values.env.druid_xmx }}
+           - name: DRUID_XMS
+             value: {{ .Values.env.druid_xms }}
+           - name: DRUID_MAXNEWSIZE
+             value: {{ .Values.env.druid_maxnewsize }}
+           - name: DRUID_NEWSIZE
+             value: {{ .Values.env.druid_newsize }}
+           - name: S3_STORAGE_BUCKET
+             value: {{ .Values.env.s3_storage_bucket }}
+           - name: S3_INDEXING_BUCKET
+             value: {{ .Values.env.s3_indexing_bucket }}
+           - name: S3_ACCESS_KEY
+             value: {{ .Values.env.s3_access_key }}
+           - name: DRUID_HOSTNAME
+             value: {{ .Values.nodes.coordinator.service.name }}
+           - name: ZOOKEEPER_HOST
+             value: {{ printf "%s-%s" .Release.Name "zookeeper" | trunc 34 }}
+
+        #TODO add readiness & liveness probes
+      volumes:
+        - name: {{ .Values.nodes.coordinator.configVolumeClaim }}
+          configMap:
+            name: common-runtime-configmap
+            items:
+            - key: common.runtime.properties
+              path: _common/common.runtime.properties
+            - key: coordinator.runtime.properties
+              path: coordinator/runtime.properties
+            - key: coordinator.jvm.config
+              path: coordinator/jvm.config
+            - key: coordinator.main.config
+              path: coordinator/main.config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.nodes.coordinator.service.name }}
+  #TODO flexible service Name, configMap
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+spec:
+  type: {{ .Values.nodes.coordinator.service.type }}
+  ports:
+  {{range .Values.nodes.coordinator.service.ports }}
+  - name: {{ .name }}
+    port: {{ .port }}
+    nodePort: {{ .nodePort }}
+  {{end}}
+  selector:
+    name: "{{ .Chart.Name }}-{{ .Values.nodes.coordinator.name }}-rc"

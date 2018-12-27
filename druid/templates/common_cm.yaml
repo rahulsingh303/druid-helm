@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: common-runtime-configmap
+data:
+  common.runtime.properties: |
+{{ tpl (.Files.Get "config/_common-runtime.properties") . | indent 4 }}
+  overlord.runtime.properties: |
+{{ tpl (.Files.Get "config/overlord/_runtime.properties") . | indent 4 }}
+  overlord.jvm.config: |
+{{ tpl (.Files.Get "config/overlord/_jvm.config") . | indent 4 }}
+  overlord.main.config: |
+{{ tpl (.Files.Get "config/overlord/_main.config") . | indent 4 }}
+  middlemanager.runtime.properties: |
+{{ tpl (.Files.Get "config/middlemanager/_runtime.properties") . | indent 4 }}
+  middlemanager.jvm.config: |
+{{ tpl (.Files.Get "config/middlemanager/_jvm.config") . | indent 4 }}
+  middlemanager.main.config: |
+{{ tpl (.Files.Get "config/middlemanager/_main.config") . | indent 4 }}
+  coordinator.runtime.properties: |
+{{ tpl (.Files.Get "config/coordinator/_runtime.properties") . | indent 4 }}
+  coordinator.jvm.config: |
+{{ tpl (.Files.Get "config/coordinator/_jvm.config") . | indent 4 }}
+  coordinator.main.config: |
+{{ tpl (.Files.Get "config/coordinator/_main.config") . | indent 4 }}
+  historical.runtime.properties: |
+{{ tpl (.Files.Get "config/historical/_runtime.properties") . | indent 4 }}
+  historical.jvm.config: |
+{{ tpl (.Files.Get "config/historical/_jvm.config") . | indent 4 }}
+  historical.main.config: |
+{{ tpl (.Files.Get "config/historical/_main.config") . | indent 4 }}
+  broker.runtime.properties: |
+{{ tpl (.Files.Get "config/broker/_runtime.properties") . | indent 4 }}
+  broker.jvm.config: |
+{{ tpl (.Files.Get "config/broker/_jvm.config") . | indent 4 }}
+  broker.main.config: |
+{{ tpl (.Files.Get "config/broker/_main.config") . | indent 4 }}

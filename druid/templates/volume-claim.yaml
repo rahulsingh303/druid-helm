@@ -1,0 +1,190 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: {{ .Values.volumes.druidSegmentDeepStorage.Name }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-40"
+spec:
+  storageClassName: {{ .Values.volumes.druidSegmentDeepStorage.storageClassName }}
+  accessModes:
+    - {{ .Values.volumes.druidSegmentDeepStorage.accessModes }}
+  capacity:
+    storage: {{ .Values.volumes.druidSegmentDeepStorage.capacity }}
+  hostPath:
+    path: {{ .Values.volumes.druidSegmentDeepStorage.hostPath }}
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ .Values.volumeClaims.druidSegmentDeepStorage.ClaimName }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-35"
+    
+spec:
+  storageClassName: {{ .Values.volumeClaims.druidSegmentDeepStorage.storageClassName }}
+  accessModes:
+    - {{ .Values.volumeClaims.druidSegmentDeepStorage.accessModes }}
+  resources:
+    requests:
+      storage: {{ .Values.volumeClaims.druidSegmentDeepStorage.storage }}
+
+---
+
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: {{ .Values.volumes.SegmentCache.Name }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-40"
+spec:
+  storageClassName: {{ .Values.volumes.SegmentCache.storageClassName }}
+  accessModes:
+    - {{ .Values.volumes.SegmentCache.accessModes }}
+  capacity:
+    storage: {{ .Values.volumes.SegmentCache.capacity }}
+  hostPath:
+    path: {{ .Values.volumes.SegmentCache.hostPath }}
+
+---
+
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ .Values.volumeClaims.SegmentCache.ClaimName }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-35"
+spec:
+  accessModes:
+    - {{ .Values.volumeClaims.SegmentCache.accessModes }}
+  storageClassName: {{ .Values.volumeClaims.SegmentCache.storageClassName }}
+  resources:
+    requests:
+      storage: {{ .Values.volumeClaims.SegmentCache.storage }}
+
+---
+
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: {{ .Values.volumes.mysql.Name }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-40"
+spec:
+  storageClassName: {{ .Values.volumes.mysql.storageClassName }}
+  accessModes:
+    - {{ .Values.volumes.mysql.accessModes }}
+  capacity:
+    storage: {{ .Values.volumes.mysql.capacity }}
+  hostPath:
+    path: {{ .Values.volumes.mysql.hostPath }}
+
+---
+
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ .Values.volumeClaims.mysql.ClaimName }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-35"
+spec:
+  accessModes:
+    - {{ .Values.volumeClaims.mysql.accessModes }}
+  storageClassName: {{ .Values.volumeClaims.mysql.storageClassName }}
+  resources:
+    requests:
+      storage: {{ .Values.volumeClaims.mysql.storage }}
+
+---
+
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: {{ .Values.volumes.config.Name }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-40"
+spec:
+  storageClassName: {{ .Values.volumes.config.storageClassName }}
+  accessModes:
+    - {{ .Values.volumes.config.accessModes }}
+  capacity:
+    storage: {{ .Values.volumes.config.capacity }}
+  hostPath:
+    path: {{ .Values.volumes.config.hostPath }}
+
+---
+
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ .Values.volumeClaims.config.ClaimName }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-35"
+spec:
+  accessModes:
+    - {{ .Values.volumeClaims.config.accessModes }}
+  storageClassName: {{ .Values.volumeClaims.config.storageClassName }}
+  resources:
+    requests:
+      storage: {{ .Values.volumeClaims.config.storage }}
+      
+---
+
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: {{ .Values.volumes.zookeeper.Name }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-40"
+spec:
+  storageClassName: {{ .Values.volumes.zookeeper.storageClassName }}
+  accessModes:
+    - {{ .Values.volumes.zookeeper.accessModes }}
+  capacity:
+    storage: {{ .Values.volumes.zookeeper.capacity }}
+  hostPath:
+    path: {{ .Values.volumes.zookeeper.hostPath }}
+
+---
+
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: {{ .Values.volumes.zookeeper1.Name }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-40"
+spec:
+  storageClassName: {{ .Values.volumes.zookeeper1.storageClassName }}
+  accessModes:
+    - {{ .Values.volumes.zookeeper1.accessModes }}
+  capacity:
+    storage: {{ .Values.volumes.zookeeper1.capacity }}
+  hostPath:
+    path: {{ .Values.volumes.zookeeper1.hostPath }}
+
+---
+
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: {{ .Values.volumes.zookeeper2.Name }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-40"
+spec:
+  storageClassName: {{ .Values.volumes.zookeeper2.storageClassName }}
+  accessModes:
+    - {{ .Values.volumes.zookeeper2.accessModes }}
+  capacity:
+    storage: {{ .Values.volumes.zookeeper2.capacity }}
+  hostPath:
+    path: {{ .Values.volumes.zookeeper2.hostPath }}

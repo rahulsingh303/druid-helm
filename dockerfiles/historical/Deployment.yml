@@ -1,0 +1,17 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: druid8s-historical-deployment
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: druid
+    spec:
+      containers:
+          - name: druid-historical
+            image: jkaralus/druid8s-historical:latest
+            imagePullPolicy: IfNotPresent
+            ports:
+              - containerPort: 8083

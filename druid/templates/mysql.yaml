@@ -1,0 +1,75 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mysql-druid
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-25"
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: mysql-druid
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: mysql
+          image: "mysql:5.7"
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                 name: druid
+                 key: mysql-root-password
+            # - name: MYSQL_USER
+              # valueFrom:
+                # secretKeyRef:
+                 # name: druid
+                 # key: user
+            # - name: MYSQL_PASSWORD
+              # valueFrom:
+                # secretKeyRef:
+                 # name: druid
+                 # key: password
+            # - name: MYSQL_DATABASE
+              # valueFrom:
+                # secretKeyRef:
+                 # name: druid
+                 # key: mysql-database
+          ports:
+          - containerPort: 3306
+            name: mysql
+          volumeMounts:
+          - name: mysql-persistent-storage
+            mountPath: /var/lib/mysql
+          {{- if .Values.initializationFiles }}
+          - name: migrations
+            mountPath: /docker-entrypoint-initdb.d
+          {{- end }}
+      volumes:
+        - name: mysql-persistent-storage
+          persistentVolumeClaim:
+           claimName: mysql-persistent-storage
+        {{- if .Values.initializationFiles }}
+        - name: migrations
+          configMap:
+            name: mysql-initialization
+        {{- end }}
+---           
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-druid
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-25"
+spec:
+  ports:
+    - port: 3306
+      targetPort: 3306
+  selector:
+    name: mysql-druid
+  clusterIP: None
+

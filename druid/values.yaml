@@ -1,0 +1,265 @@
+# Default values for druid.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+replicaCount: 1
+
+#TODO remove quickstart stuff
+iapVersion: "imply-1.3.1"
+debug: "True"
+
+postgresqlName: "postgresql"
+
+druidSegmentDeepStorage: "druid-deep-storage"
+druidSegmentCache: "druid-deep-segment-cache"
+
+volumes:
+  druidSegmentDeepStorage:
+    Name: druid-deep-storage
+    hostPath: /druid-segments/
+    storageClassName: standard
+    accessModes: ReadWriteMany
+    capacity: 2Gi
+  SegmentCache:
+    Name: druid-deep-segment-cache
+    storageClassName: standard
+    hostPath: /druid-segment-cache/
+    storageClassName: standard
+    accessModes: ReadWriteMany
+    capacity: 3Gi
+  mysql:
+    Name: mysql-persistent-storage
+    hostPath: /druid-mysql/
+    storageClassName: standard
+    accessModes: ReadWriteMany
+    capacity: 1Gi    
+  config:
+    Name: config-volume
+    hostPath: /u00/tc_pv/druid-config/
+    storageClassName: standard
+    accessModes: ReadWriteMany
+    capacity: 0.5Gi
+  zookeeper:
+    Name: data
+    hostPath: /zookeeper-data/
+    storageClassName: standard
+    accessModes: ReadWriteOnce
+    capacity: 5Gi
+  zookeeper1:
+    Name: data1
+    hostPath: /zookeeper-data1/
+    storageClassName: standard
+    accessModes: ReadWriteOnce
+    capacity: 5Gi
+  zookeeper2:
+    Name: data2
+    hostPath: /zookeeper-data2/
+    storageClassName: standard
+    accessModes: ReadWriteOnce
+    capacity: 5Gi
+
+volumeClaims:
+  druidSegmentDeepStorage:
+    ClaimName: druid-deep-storage
+    accessModes: ReadWriteMany
+    storage: 2Gi
+  SegmentCache:
+    ClaimName: druid-deep-segment-cache
+    storageClassName: standard
+    accessModes: ReadWriteMany
+    storage: 3Gi
+  mysql:
+    ClaimName: mysql-persistent-storage
+    storageClassName: standard
+    accessModes: ReadWriteMany
+    storage: 1Gi
+  config:
+    ClaimName: config-volume
+    storageClassName: standard
+    accessModes: ReadWriteMany
+    storage: 0.5Gi
+
+secrets:
+  name: druid
+  key:
+    # Generate from the cryptography package
+    # FERNET_KEY=$(python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())")
+    user: user
+    password: password
+    # In the format: 
+    # postgresql+psycopg2://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB
+    connectURI: connectURI
+
+env:
+  druid_xmx: 1g
+  druid_xms: 1g
+  druid_maxnewsize: 250m
+  druid_newsize: 250m
+  s3_storage_bucket: your-deep-storage-bucket-goes-here
+  s3_indexing_bucket: your-index-log-bucket-goes-here
+  s3_access_key: XXXXXXXXXXXXXXXXXXXX
+  mysql_host: mysql-druid
+  mysql_port: 3306
+
+zookeeper:
+  Replicas: 3
+  Name: zk
+postgresql:
+  postgresUser: druid
+  postgresDatabase: druid
+  postgresPassword: secret
+
+nodes:
+  coordinator:
+    name: "coordinator"
+    replicaCount: 1
+    image:
+      repository: druid
+      tag: v1.0
+      pullPolicy: IfNotPresent
+    service:
+      name: druid-coordinator-service
+      type: NodePort
+      ports:
+        - name: coordinator-port
+          port: 8081
+          nodePort: 30081
+    configVolumeClaim: config-volume
+    configMountPath: /opt/druid/conf/druid/
+  overlord:
+    name: "overlord"
+    replicaCount: 1
+    image:
+      repository: druid
+      tag: v1.0
+      pullPolicy: IfNotPresent
+    service:
+      name: druid-overlord-service
+      type: NodePort
+      ports:
+        - name: overlord-port
+          port: 8090
+          nodePort: 30090
+    configVolumeClaim: config-volume
+    configMountPath: /opt/druid/conf/druid/
+  historical:
+    name: "historical"
+    replicaCount: 1
+    image:
+      repository: druid
+      tag: v1.0
+      pullPolicy: IfNotPresent
+    service:
+      name: druid-historical-service
+      type: ClusterIP
+      ports:
+        - name: historical-port
+          port: 8083
+          nodePort: 30083
+    dataVolumeClaim : data
+    dataMountPath: /var/druid/segments
+    segmentcacheVolumeClaim: segment-cache
+    segmentcacheMountPath: /var/druid/segment-cache
+    configVolumeClaim: config-volume
+    configMountPath: /opt/druid/conf/druid/
+  broker:
+    name: "broker"
+    replicaCount: 1
+    image:
+      repository: druid
+      tag: v1.0
+      pullPolicy: IfNotPresent
+    service:
+      name: druid-broker-service
+      type: NodePort
+      ports:
+        - name: broker-port
+          port: 8082
+          nodePort: 30082
+    configVolumeClaim: config-volume
+    configMountPath: /opt/druid/conf/druid/
+  # tranquility:
+    # name: "tranquility"
+    # replicaCount: 1
+    # image:
+      # repository: jkaralus/druid8s-tranquility
+      # tag: latest
+      # pullPolicy: IfNotPresent
+    # service:
+      # name: druid-tranquility-service
+      # type: NodePort
+      # ports:
+        # - name: tranquility-port
+          # port: 8200
+  # pivot:
+    # name: "pivot"
+    # replicaCount: 1
+    # image:
+      # repository: jkaralus/druid8s-pivot
+      # tag: latest
+      # pullPolicy: IfNotPresent
+    # service:
+      # name: druid-pivot-service
+      # type: NodePort
+      # ports:
+        # - name: pivot-port
+          # port: 9095
+  middlemanager:
+    name: "middlemanager"
+    replicaCount: 1
+    image:
+      repository: druid
+      tag: v1.0
+      pullPolicy: IfNotPresent
+    service:
+      name: druid-middlemanager-service
+      type: NodePort
+      ports:
+        - name: middlemanager-port
+          port: 8091
+          nodePort: 30091
+        - name: peon-0
+          port: 8100
+        - name: peon-1
+          port: 8101
+        - name: peon-2
+          port: 8102
+        - name: peon-3
+          port: 8103
+    configVolumeClaim: config-volume
+    configMountPath: /opt/druid/conf/druid/      
+
+image:
+  historical:
+    repository: druid
+    tag: v1.0
+    pullPolicy: IfNotPresent
+  quickstart:
+    repository: druid
+    tag: v1.0
+    pullPolicy: IfNotPresent
+service:
+  historical:
+    name: historical
+    type: ClusterIP
+    externalPort: 8083
+    internalPort: 8083
+  quickstart:
+    name: quickstart
+    type: NodePort
+    port: 9095
+  #TODO remove ulgy hotfix
+  type: NodePort
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+initializationFiles:
+ druid-db.sql: |-
+   CREATE DATABASE IF NOT EXISTS druid DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci; 
+   CREATE USER 'druid' IDENTIFIED BY 'keepasecret'; 
+   GRANT ALL ON druid.* TO 'druid';
